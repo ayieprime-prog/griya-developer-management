@@ -1,0 +1,273 @@
+<%- include('../partials/header', { title: 'Detail Kerjasama Developer' }) %>
+
+<div class="row mb-4">
+  <div class="col-md-8">
+    <h1>
+      <% if (kerjasama.nomor_pks) { %>
+        <%= kerjasama.nomor_pks %>
+      <% } else { %>
+        <span class="badge bg-secondary">DRAFT</span>
+      <% } %>
+    </h1>
+    <p class="text-muted">Developer: <strong><%= kerjasama.developer_nama %></strong></p>
+  </div>
+  <div class="col-md-4 text-end">
+    <a href="/kerjasama-developer/<%= kerjasama.id %>/edit" class="btn btn-warning">
+      <i class="fas fa-edit"></i> Edit
+    </a>
+    <a href="/kerjasama-developer" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Kembali
+    </a>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <ul class="nav nav-tabs mb-3" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail" type="button" role="tab">
+          <i class="fas fa-file-contract"></i> Detail
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="aplikasi-tab" data-bs-toggle="tab" data-bs-target="#aplikasi" type="button" role="tab">
+          <i class="fas fa-folder-open"></i> Aplikasi
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="verifikasi-tab" data-bs-toggle="tab" data-bs-target="#verifikasi" type="button" role="tab">
+          <i class="fas fa-check-circle"></i> Verifikasi
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="keputusan-tab" data-bs-toggle="tab" data-bs-target="#keputusan" type="button" role="tab">
+          <i class="fas fa-gavel"></i> Keputusan
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <!-- Detail Tab -->
+      <div class="tab-pane fade show active" id="detail" role="tabpanel">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Informasi PKS</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Nomor PKS:</strong><br>
+                <%= kerjasama.nomor_pks || '-' %>
+              </div>
+              <div class="col-md-6">
+                <strong>Tanggal PKS:</strong><br>
+                <%= formatDate(kerjasama.tanggal_pks) %>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Total Plafond:</strong><br>
+                <%= formatCurrency(kerjasama.total_plafond_kerjasama) %>
+              </div>
+              <div class="col-md-6">
+                <strong>Jangka Waktu:</strong><br>
+                <%= kerjasama.jangka_waktu_bulan %> Bulan
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Margin Rate:</strong><br>
+                <%= kerjasama.margin_rate %>%
+              </div>
+              <div class="col-md-6">
+                <strong>Alur Kerjasama:</strong><br>
+                <span class="badge bg-info"><%= kerjasama.alur %></span>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Awal Berlaku:</strong><br>
+                <%= formatDate(kerjasama.awal_berlaku) %>
+              </div>
+              <div class="col-md-6">
+                <strong>Akhir Berlaku:</strong><br>
+                <%= formatDate(kerjasama.akhir_berlaku) %>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Jenis Objek:</strong><br>
+                <%= kerjasama.jenis_objek || '-' %>
+              </div>
+              <div class="col-md-6">
+                <strong>Cakupan Wilayah:</strong><br>
+                <%= kerjasama.cakupan_wilayah || '-' %>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Legalitas Tanah:</strong><br>
+                <%= kerjasama.legalitas_tanah || '-' %>
+              </div>
+              <div class="col-md-6">
+                <strong>Kondisi Bangunan:</strong><br>
+                <%= kerjasama.kondisi_bangunan || '-' %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aplikasi Tab -->
+      <div class="tab-pane fade" id="aplikasi" role="tabpanel">
+        <% if (typeof aplikasi !== 'undefined' && aplikasi) { %>
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Aplikasi Permohonan</h5>
+            </div>
+            <div class="card-body">
+              <p class="text-muted">Data aplikasi permohonan PKS (75+ field)</p>
+              <p>Fase 2: Form lengkap akan diimplementasikan.</p>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="alert alert-info">
+            Belum ada aplikasi permohonan. Silakan buat aplikasi terlebih dahulu.
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Verifikasi Tab -->
+      <div class="tab-pane fade" id="verifikasi" role="tabpanel">
+        <% if (typeof verifikasi !== 'undefined' && verifikasi) { %>
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Hasil Verifikasi</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <strong>Hasil:</strong><br>
+                <span class="badge bg-<%= verifikasi.hasil_verifikasi === 'Lolos' ? 'success' : 'danger' %>">
+                  <%= verifikasi.hasil_verifikasi %>
+                </span>
+              </div>
+              <div class="mb-3">
+                <strong>Catatan:</strong><br>
+                <%= verifikasi.catatan || '-' %>
+              </div>
+              <div class="mb-3">
+                <strong>Diverifikasi Oleh:</strong><br>
+                <small class="text-muted"><%= formatDate(verifikasi.verified_at) %></small>
+              </div>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="alert alert-info">
+            Belum ada hasil verifikasi.
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Keputusan Tab -->
+      <div class="tab-pane fade" id="keputusan" role="tabpanel">
+        <% if (typeof keputusan !== 'undefined' && keputusan) { %>
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Hasil Keputusan</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <strong>Hasil Keputusan:</strong><br>
+                <span class="badge bg-<%= keputusan.hasil_keputusan === 'Disetujui' ? 'success' : 'danger' %>">
+                  <%= keputusan.hasil_keputusan %>
+                </span>
+              </div>
+              <div class="mb-3">
+                <strong>Level:</strong><br>
+                <%= keputusan.level === 'cabang' ? 'Cabang' : 'Pusat' %>
+              </div>
+              <div class="mb-3">
+                <strong>Catatan:</strong><br>
+                <%= keputusan.catatan || '-' %>
+              </div>
+              <div class="mb-3">
+                <strong>Diputuskan Oleh:</strong><br>
+                <small class="text-muted"><%= formatDate(keputusan.decided_at) %></small>
+              </div>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="alert alert-info">
+            Belum ada keputusan.
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Status Kerjasama</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3 text-center">
+          <h4>
+            <span class="badge bg-<%= statusBadge(kerjasama.status) %>">
+              <%= kerjasama.status %>
+            </span>
+          </h4>
+        </div>
+
+        <div class="mb-3 pb-3 border-bottom">
+          <small class="text-muted d-block">
+            <i class="fas fa-calendar"></i> Dibuat: <%= formatDate(kerjasama.created_at) %><br>
+            <i class="fas fa-edit"></i> Diperbarui: <%= formatDate(kerjasama.updated_at) %>
+          </small>
+        </div>
+
+        <% if (kerjasama.status === 'Draft') { %>
+          <a href="/kerjasama-developer/<%= kerjasama.id %>/edit" class="btn btn-primary w-100 mb-2">
+            <i class="fas fa-pencil-alt"></i> Lanjutkan Edit
+          </a>
+          <a href="/kerjasama-developer/<%= kerjasama.id %>/ajukan" class="btn btn-success w-100 mb-2">
+            <i class="fas fa-paper-plane"></i> Ajukan
+          </a>
+        <% } %>
+
+        <% if (kerjasama.status === 'Diajukan' && ['admin', 'supervisor'].includes(user.role)) { %>
+          <a href="/kerjasama-developer/<%= kerjasama.id %>/verifikasi" class="btn btn-warning w-100 mb-2">
+            <i class="fas fa-check-circle"></i> Proses Verifikasi
+          </a>
+        <% } %>
+
+        <% if (kerjasama.status === 'Verifikasi' && ['admin', 'pemimpin_cabang'].includes(user.role)) { %>
+          <a href="/kerjasama-developer/<%= kerjasama.id %>/keputusan" class="btn btn-primary w-100 mb-2">
+            <i class="fas fa-gavel"></i> Proses Keputusan
+          </a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">Aksi Lainnya</h5>
+      </div>
+      <div class="card-body">
+        <a href="/kerjasama-developer/<%= kerjasama.id %>/dokumen" class="btn btn-sm btn-info w-100 mb-2">
+          <i class="fas fa-file"></i> Dokumen
+        </a>
+        <a href="/kerjasama-developer/<%= kerjasama.id %>/print" class="btn btn-sm btn-secondary w-100">
+          <i class="fas fa-print"></i> Cetak
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

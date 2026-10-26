@@ -1,0 +1,377 @@
+/* Griya Developer Management - Stylesheet */
+
+:root {
+  --primary-color: #003d82;
+  --secondary-color: #f39c12;
+  --success-color: #27ae60;
+  --danger-color: #e74c3c;
+  --warning-color: #f39c12;
+  --info-color: #3498db;
+  --light-color: #ecf0f1;
+  --dark-color: #34495e;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+/* Navbar Customization */
+.navbar {
+  background: linear-gradient(135deg, var(--primary-color), #003d82) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+  font-weight: 600;
+  font-size: 1.3rem;
+  letter-spacing: 0.5px;
+}
+
+.navbar-brand i {
+  margin-right: 8px;
+}
+
+.dropdown-menu {
+  border: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.dropdown-item:hover {
+  background-color: var(--light-color);
+  color: var(--primary-color);
+}
+
+/* Cards */
+.card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
+  border-radius: 8px 8px 0 0 !important;
+}
+
+.card-header h5 {
+  color: var(--primary-color);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Badges */
+.badge {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 20px;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 8px 16px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: #002946;
+  border-color: #002946;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,61,130,0.2);
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.btn-success:hover {
+  background-color: #229954;
+  border-color: #229954;
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-danger:hover {
+  background-color: #c0392b;
+  border-color: #c0392b;
+}
+
+.btn-warning {
+  background-color: var(--warning-color);
+  border-color: var(--warning-color);
+  color: white;
+}
+
+.btn-warning:hover {
+  background-color: #e67e22;
+  border-color: #e67e22;
+  color: white;
+}
+
+.btn-info {
+  background-color: var(--info-color);
+  border-color: var(--info-color);
+}
+
+.btn-info:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+/* Tables */
+.table {
+  border-collapse: collapse;
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  border-top: 2px solid #dee2e6;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  color: var(--primary-color);
+  padding: 12px;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.table tbody td {
+  padding: 12px;
+  vertical-align: middle;
+}
+
+/* Forms */
+.form-control,
+.form-select {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(0, 61, 130, 0.15);
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--dark-color);
+  margin-bottom: 6px;
+}
+
+/* Alerts */
+.alert {
+  border: none;
+  border-radius: 6px;
+  border-left: 4px solid;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+  border-color: #27ae60;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-color: #e74c3c;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border-color: #f39c12;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border-color: #3498db;
+}
+
+/* Dashboard Cards with colored left border */
+.border-left-primary {
+  border-left: 4px solid var(--primary-color) !important;
+}
+
+.border-left-success {
+  border-left: 4px solid var(--success-color) !important;
+}
+
+.border-left-warning {
+  border-left: 4px solid var(--warning-color) !important;
+}
+
+.border-left-danger {
+  border-left: 4px solid var(--danger-color) !important;
+}
+
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.text-success {
+  color: var(--success-color) !important;
+}
+
+.text-warning {
+  color: var(--warning-color) !important;
+}
+
+.text-danger {
+  color: var(--danger-color) !important;
+}
+
+/* Footer */
+footer {
+  margin-top: 40px;
+  border-top: 1px solid #dee2e6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .btn {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+
+  .table thead {
+    font-size: 0.9rem;
+  }
+
+  .table tbody {
+    font-size: 0.85rem;
+  }
+}
+
+/* Utility Classes */
+.font-weight-bold {
+  font-weight: 600;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-end {
+  text-align: right;
+}
+
+.text-muted {
+  color: #6c757d;
+}
+
+.small {
+  font-size: 0.85rem;
+}
+
+.h3 {
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Login Page */
+.bg-light {
+  background-color: #f8f9fa !important;
+}
+
+.card.shadow {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+.card-header.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+/* Print Styles */
+@media print {
+  .navbar,
+  .btn,
+  footer {
+    display: none;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+  }
+
+  .card {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+  }
+
+  .card-header {
+    background-color: #3d3d3d;
+    border-bottom-color: #4d4d4d;
+  }
+
+  .table {
+    color: #e0e0e0;
+  }
+
+  .table thead th {
+    background-color: #3d3d3d;
+    border-color: #4d4d4d;
+  }
+
+  .table tbody tr:hover {
+    background-color: #3d3d3d;
+  }
+
+  .form-control,
+  .form-select {
+    background-color: #3d3d3d;
+    color: #e0e0e0;
+    border-color: #4d4d4d;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    background-color: #3d3d3d;
+    color: #e0e0e0;
+  }
+}

@@ -1,0 +1,147 @@
+<%- include('../partials/header', { title: (action || 'Edit') + ' Developer' }) %>
+
+<div class="row mb-4">
+  <div class="col-md-12">
+    <h1><%= action %> Developer</h1>
+    <p class="text-muted">Form pendaftaran master data developer</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0"><%= action %> Data Developer</h5>
+  </div>
+  <div class="card-body">
+    <form method="POST" action="<%= developer ? '/developer/' + developer.id : '/developer' %>" class="needs-validation">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="nama" class="form-label">Nama Developer <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="nama" name="nama" required
+                   value="<%= developer ? developer.nama : '' %>">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="legalitas" class="form-label">Legalitas Perusahaan</label>
+            <select class="form-select" id="legalitas" name="legalitas">
+              <option value="">-- Pilih --</option>
+              <option value="PT" <%= developer && developer.legalitas === 'PT' ? 'selected' : '' %>>PT (Perseroan Terbatas)</option>
+              <option value="CV" <%= developer && developer.legalitas === 'CV' ? 'selected' : '' %>>CV (Komanditer)</option>
+              <option value="Perseroan" <%= developer && developer.legalitas === 'Perseroan' ? 'selected' : '' %>>Perseroan</option>
+              <option value="Lainnya" <%= developer && developer.legalitas === 'Lainnya' ? 'selected' : '' %>>Lainnya</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label for="nomor_akta_pendirian" class="form-label">Nomor Akta Pendirian</label>
+            <input type="text" class="form-control" id="nomor_akta_pendirian" name="nomor_akta_pendirian"
+                   value="<%= developer ? developer.nomor_akta_pendirian : '' %>">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label for="tanggal_akta_pendirian" class="form-label">Tanggal Akta Pendirian</label>
+            <input type="date" class="form-control" id="tanggal_akta_pendirian" name="tanggal_akta_pendirian"
+                   value="<%= developer && developer.tanggal_akta_pendirian ? formatDateInput(developer.tanggal_akta_pendirian) : '' %>">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label for="notaris_nama" class="form-label">Nama Notaris</label>
+            <input type="text" class="form-control" id="notaris_nama" name="notaris_nama"
+                   value="<%= developer ? developer.notaris_nama : '' %>">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="sk_menkumham_nomor" class="form-label">Nomor SK Menkumham</label>
+            <input type="text" class="form-control" id="sk_menkumham_nomor" name="sk_menkumham_nomor"
+                   value="<%= developer ? developer.sk_menkumham_nomor : '' %>">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="sk_menkumham_tanggal" class="form-label">Tanggal SK Menkumham</label>
+            <input type="date" class="form-control" id="sk_menkumham_tanggal" name="sk_menkumham_tanggal"
+                   value="<%= developer && developer.sk_menkumham_tanggal ? formatDateInput(developer.sk_menkumham_tanggal) : '' %>">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email"
+                   value="<%= developer ? developer.email : '' %>">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label for="no_telepon" class="form-label">Nomor Telepon</label>
+            <input type="text" class="form-control" id="no_telepon" name="no_telepon"
+                   value="<%= developer ? developer.no_telepon : '' %>">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label for="situs_web" class="form-label">Website</label>
+            <input type="url" class="form-control" id="situs_web" name="situs_web"
+                   value="<%= developer ? developer.situs_web : '' %>">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="mb-3">
+            <label for="alamat_kantor" class="form-label">Alamat Kantor Pusat</label>
+            <textarea class="form-control" id="alamat_kantor" name="alamat_kantor" rows="3"><%= developer ? developer.alamat_kantor : '' %></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="kota" class="form-label">Kota</label>
+            <input type="text" class="form-control" id="kota" name="kota"
+                   value="<%= developer ? developer.kota : '' %>">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="provinsi" class="form-label">Provinsi</label>
+            <input type="text" class="form-control" id="provinsi" name="provinsi"
+                   value="<%= developer ? developer.provinsi : '' %>">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="mb-3">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> Simpan
+            </button>
+            <a href="/developer" class="btn btn-secondary">
+              <i class="fas fa-times"></i> Batal
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

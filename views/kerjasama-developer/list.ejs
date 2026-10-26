@@ -1,0 +1,96 @@
+<%- include('../partials/header', { title: 'Daftar Kerjasama Developer' }) %>
+
+<div class="row mb-4">
+  <div class="col-md-8">
+    <h1>Daftar Kerjasama Developer</h1>
+    <p class="text-muted">Perjanjian Kerjasama Syariah dengan Developer Perumahan</p>
+  </div>
+  <div class="col-md-4 text-end">
+    <a href="/kerjasama-developer/new" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Pengajuan Kerjasama Baru
+    </a>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="GET" action="/kerjasama-developer" class="row g-3">
+      <div class="col-md-4">
+        <input type="text" name="search" class="form-control" placeholder="Cari nama developer atau proyek..."
+               value="<%= typeof search !== 'undefined' ? search : '' %>">
+      </div>
+      <div class="col-md-3">
+        <select name="status" class="form-select">
+          <option value="">-- Semua Status --</option>
+          <option value="Draft" <%= typeof status !== 'undefined' && status === 'Draft' ? 'selected' : '' %>>Draft</option>
+          <option value="Diajukan" <%= typeof status !== 'undefined' && status === 'Diajukan' ? 'selected' : '' %>>Diajukan</option>
+          <option value="Disetujui" <%= typeof status !== 'undefined' && status === 'Disetujui' ? 'selected' : '' %>>Disetujui</option>
+          <option value="Ditolak" <%= typeof status !== 'undefined' && status === 'Ditolak' ? 'selected' : '' %>>Ditolak</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="fas fa-search"></i> Cari
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">Daftar Kerjasama</h5>
+  </div>
+  <div class="card-body">
+    <% if (typeof kerjasamas !== 'undefined' && kerjasamas.length > 0) { %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Nomor PKS</th>
+              <th>Developer</th>
+              <th>Proyek</th>
+              <th>Total Plafond</th>
+              <th>Tanggal PKS</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% kerjasamas.forEach(ks => { %>
+              <tr>
+                <td>
+                  <strong><%= ks.nomor_pks || 'DRAFT' %></strong><br>
+                  <small class="text-muted">
+                    <i class="fas fa-calendar"></i> <%= formatDate(ks.tanggal_pks) %>
+                  </small>
+                </td>
+                <td><%= ks.developer_nama || '-' %></td>
+                <td><%= ks.nama_proyek || '-' %></td>
+                <td><%= formatCurrency(ks.total_plafond_kerjasama) %></td>
+                <td><%= formatDate(ks.awal_berlaku) %> - <%= formatDate(ks.akhir_berlaku) %></td>
+                <td>
+                  <span class="badge bg-<%= statusBadge(ks.status) %>">
+                    <%= ks.status %>
+                  </span>
+                </td>
+                <td>
+                  <a href="/kerjasama-developer/<%= ks.id %>" class="btn btn-sm btn-info">
+                    <i class="fas fa-eye"></i> Lihat
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle"></i> Belum ada kerjasama terdaftar.
+        <a href="/kerjasama-developer/new" class="alert-link">Buat kerjasama baru.</a>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

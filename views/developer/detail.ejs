@@ -1,0 +1,149 @@
+<%- include('../partials/header', { title: 'Detail Developer' }) %>
+
+<div class="row mb-4">
+  <div class="col-md-8">
+    <h1><%= developer.nama %></h1>
+    <p class="text-muted">Detail informasi developer</p>
+  </div>
+  <div class="col-md-4 text-end">
+    <a href="/developer/<%= developer.id %>/edit" class="btn btn-warning">
+      <i class="fas fa-edit"></i> Edit
+    </a>
+    <a href="/developer" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Kembali
+    </a>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5 class="mb-0">Informasi Umum</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Nama Developer:</strong><br>
+            <%= developer.nama %>
+          </div>
+          <div class="col-md-6">
+            <strong>Legalitas:</strong><br>
+            <%= developer.legalitas || '-' %>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Email:</strong><br>
+            <%= developer.email || '-' %>
+          </div>
+          <div class="col-md-6">
+            <strong>Nomor Telepon:</strong><br>
+            <%= developer.no_telepon || '-' %>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Kota:</strong><br>
+            <%= developer.kota || '-' %>
+          </div>
+          <div class="col-md-6">
+            <strong>Provinsi:</strong><br>
+            <%= developer.provinsi || '-' %>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <strong>Alamat Kantor Pusat:</strong><br>
+            <%= developer.alamat_kantor || '-' %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Dokumen Legalitas</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Nomor Akta Pendirian:</strong><br>
+            <%= developer.nomor_akta_pendirian || '-' %>
+          </div>
+          <div class="col-md-6">
+            <strong>Tanggal Akta:</strong><br>
+            <%= developer.tanggal_akta_pendirian ? formatDate(developer.tanggal_akta_pendirian) : '-' %>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Nama Notaris:</strong><br>
+            <%= developer.notaris_nama || '-' %>
+          </div>
+          <div class="col-md-6">
+            <strong>NIB Notaris:</strong><br>
+            <%= developer.notaris_nib || '-' %>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Nomor SK Menkumham:</strong><br>
+            <%= developer.sk_menkumham_nomor || '-' %>
+          </div>
+          <div class="col-md-6">
+            <strong>Tanggal SK Menkumham:</strong><br>
+            <%= developer.sk_menkumham_tanggal ? formatDate(developer.sk_menkumham_tanggal) : '-' %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Status & History</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <strong>Status:</strong><br>
+          <span class="badge bg-<%= developer.status === 'Aktif' ? 'success' : 'warning' %>">
+            <%= developer.status %>
+          </span>
+        </div>
+
+        <div class="mb-3">
+          <strong>Dibuat Oleh:</strong><br>
+          <small class="text-muted"><%= formatDate(developer.created_at) %></small>
+        </div>
+
+        <div class="mb-3">
+          <strong>Diperbarui Oleh:</strong><br>
+          <small class="text-muted"><%= formatDate(developer.updated_at) %></small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header">
+        <h5 class="mb-0">Aksi</h5>
+      </div>
+      <div class="card-body">
+        <a href="/developer/<%= developer.id %>/proyek" class="btn btn-sm btn-primary w-100 mb-2">
+          <i class="fas fa-building"></i> Kelola Proyek
+        </a>
+        <a href="/developer/<%= developer.id %>/pengurus" class="btn btn-sm btn-info w-100">
+          <i class="fas fa-users"></i> Kelola Pengurus
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

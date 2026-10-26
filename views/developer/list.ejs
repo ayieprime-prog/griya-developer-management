@@ -1,0 +1,70 @@
+<%- include('../partials/header', { title: 'Pendaftaran Developer PKS' }) %>
+
+<div class="row mb-4">
+  <div class="col-md-8">
+    <h1>Pendaftaran Developer PKS</h1>
+    <p class="text-muted">Database Master Developer untuk Perjanjian Kerjasama Syariah</p>
+  </div>
+  <div class="col-md-4 text-end">
+    <a href="/developer/new" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Tambah Developer
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">Daftar Developer</h5>
+  </div>
+  <div class="card-body">
+    <% if (typeof developers !== 'undefined' && developers.length > 0) { %>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Nama Developer</th>
+              <th>Legalitas</th>
+              <th>Kota</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% developers.forEach(dev => { %>
+              <tr>
+                <td>
+                  <strong><%= dev.nama %></strong><br>
+                  <small class="text-muted"><%= dev.alamat_kantor || '-' %></small>
+                </td>
+                <td><%= dev.legalitas || '-' %></td>
+                <td><%= dev.kota || '-' %></td>
+                <td><%= dev.email || '-' %></td>
+                <td>
+                  <span class="badge bg-<%= dev.status === 'Aktif' ? 'success' : 'warning' %>">
+                    <%= dev.status %>
+                  </span>
+                </td>
+                <td>
+                  <a href="/developer/<%= dev.id %>" class="btn btn-sm btn-info">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="/developer/<%= dev.id %>/edit" class="btn btn-sm btn-warning">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle"></i> Belum ada developer terdaftar.
+        <a href="/developer/new" class="alert-link">Tambah developer baru.</a>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

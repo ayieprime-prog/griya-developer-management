@@ -1,0 +1,123 @@
+<%- include('../partials/header', { title: 'Monitoring Kerjasama' }) %>
+
+<div class="row mb-4">
+  <div class="col-md-12">
+    <h1>Monitoring Kerjasama Developer</h1>
+    <p class="text-muted">Dashboard pelaporan dan analisis kerjasama PKS</p>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-3 mb-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="text-primary text-uppercase mb-1">
+          <small class="font-weight-bold">Total Kerjasama</small>
+        </div>
+        <div class="h3 mb-0"><%= stats.totalKerjasama || 0 %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="text-success text-uppercase mb-1">
+          <small class="font-weight-bold">Disetujui</small>
+        </div>
+        <div class="h3 mb-0"><%= stats.disetujui || 0 %></div>
+        <small class="text-muted">Rp <%= formatCurrency(stats.totalPlafondDisetujui) %></small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="text-warning text-uppercase mb-1">
+          <small class="font-weight-bold">Dalam Proses</small>
+        </div>
+        <div class="h3 mb-0"><%= stats.dalamProses || 0 %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="text-danger text-uppercase mb-1">
+          <small class="font-weight-bold">Ditolak</small>
+        </div>
+        <div class="h3 mb-0"><%= stats.ditolak || 0 %></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Sebaran Status Kerjasama</h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <i class="fas fa-chart-pie"></i> Visualisasi chart akan ditampilkan di sini (Phase 1)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <div class="row">
+          <div class="col-md-8">
+            <h5 class="mb-0">Kerjasama Terbaru</h5>
+          </div>
+          <div class="col-md-4 text-end">
+            <a href="/kerjasama-developer" class="btn btn-sm btn-primary">Lihat Semua</a>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <% if (typeof recentKerjasamas !== 'undefined' && recentKerjasamas.length > 0) { %>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead class="table-light">
+                <tr>
+                  <th>Nomor PKS</th>
+                  <th>Developer</th>
+                  <th>Total Plafond</th>
+                  <th>Status</th>
+                  <th>Tanggal Diperbarui</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% recentKerjasamas.forEach(ks => { %>
+                  <tr>
+                    <td><strong><%= ks.nomor_pks || 'DRAFT' %></strong></td>
+                    <td><%= ks.developer_nama || '-' %></td>
+                    <td><%= formatCurrency(ks.total_plafond_kerjasama) %></td>
+                    <td>
+                      <span class="badge bg-<%= statusBadge(ks.status) %>">
+                        <%= ks.status %>
+                      </span>
+                    </td>
+                    <td><%= formatDate(ks.updated_at) %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } else { %>
+          <p class="text-muted text-center">Belum ada data kerjasama</p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+db/kpr.db
+db/kpr.db-shm
+db/kpr.db-wal
+uploads/*
+!uploads/.gitkeep
+backups/*
+daemon/
+.DS_Store
+*.log
+.vscode/
+.idea/

@@ -1,0 +1,190 @@
+<%- include('../partials/header', { title: (action || 'Edit') + ' Kerjasama Developer' }) %>
+
+<div class="row mb-4">
+  <div class="col-md-12">
+    <h1><%= action %> Kerjasama Developer</h1>
+    <p class="text-muted">Form pengajuan perjanjian kerjasama syariah dengan developer</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0"><%= action %> PKS Developer</h5>
+  </div>
+  <div class="card-body">
+    <form method="POST" action="<%= kerjasama ? '/kerjasama-developer/' + kerjasama.id : '/kerjasama-developer' %>" class="needs-validation">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="developer_id" class="form-label">Pilih Developer <span class="text-danger">*</span></label>
+            <select class="form-select" id="developer_id" name="developer_id" required>
+              <option value="">-- Pilih Developer --</option>
+              <% if (typeof developers !== 'undefined') { %>
+                <% developers.forEach(dev => { %>
+                  <option value="<%= dev.id %>" <%= kerjasama && kerjasama.developer_id === dev.id ? 'selected' : '' %>>
+                    <%= dev.nama %>
+                  </option>
+                <% }); %>
+              <% } %>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="alur" class="form-label">Alur Kerjasama</label>
+            <select class="form-select" id="alur" name="alur">
+              <option value="Lama" <%= kerjasama && kerjasama.alur === 'Lama' ? 'selected' : '' %>>Alur Lama</option>
+              <option value="Baru" <%= kerjasama && kerjasama.alur === 'Baru' ? 'selected' : '' %>>Alur Baru (13 Tahap)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="jenis_objek" class="form-label">Jenis Objek <span class="text-danger">*</span></label>
+            <select class="form-select" id="jenis_objek" name="jenis_objek" required>
+              <option value="">-- Pilih --</option>
+              <% JENIS_OBJEK_VALUES.forEach(val => { %>
+                <option value="<%= val %>" <%= kerjasama && kerjasama.jenis_objek === val ? 'selected' : '' %>>
+                  <%= val %>
+                </option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="cakupan_wilayah" class="form-label">Cakupan Wilayah <span class="text-danger">*</span></label>
+            <select class="form-select" id="cakupan_wilayah" name="cakupan_wilayah" required>
+              <option value="">-- Pilih --</option>
+              <% CAKUPAN_WILAYAH_VALUES.forEach(val => { %>
+                <option value="<%= val %>" <%= kerjasama && kerjasama.cakupan_wilayah === val ? 'selected' : '' %>>
+                  <%= val %>
+                </option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="legalitas_tanah" class="form-label">Legalitas Tanah <span class="text-danger">*</span></label>
+            <select class="form-select" id="legalitas_tanah" name="legalitas_tanah" required>
+              <option value="">-- Pilih --</option>
+              <% LEGALITAS_TANAH_VALUES.forEach(val => { %>
+                <option value="<%= val %>" <%= kerjasama && kerjasama.legalitas_tanah === val ? 'selected' : '' %>>
+                  <%= val %>
+                </option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="kondisi_bangunan" class="form-label">Kondisi Bangunan <span class="text-danger">*</span></label>
+            <select class="form-select" id="kondisi_bangunan" name="kondisi_bangunan" required>
+              <option value="">-- Pilih --</option>
+              <% KONDISI_BANGUNAN_VALUES.forEach(val => { %>
+                <option value="<%= val %>" <%= kerjasama && kerjasama.kondisi_bangunan === val ? 'selected' : '' %>>
+                  <%= val %>
+                </option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="tipe_developer_display" class="alert alert-info mb-3" style="display:none;">
+        <strong>Tipe Developer:</strong> <span id="tipe_display">-</span>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label for="total_plafond_kerjasama" class="form-label">Total Plafond (Rp) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" id="total_plafond_kerjasama" name="total_plafond_kerjasama"
+                   required min="0" step="1000000"
+                   value="<%= kerjasama ? kerjasama.total_plafond_kerjasama : '' %>">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label for="jangka_waktu_bulan" class="form-label">Jangka Waktu (Bulan) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" id="jangka_waktu_bulan" name="jangka_waktu_bulan"
+                   required min="1" step="1"
+                   value="<%= kerjasama ? kerjasama.jangka_waktu_bulan : '' %>">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label for="margin_rate" class="form-label">Margin Rate (%) <span class="text-danger">*</span></label>
+            <input type="number" class="form-control" id="margin_rate" name="margin_rate"
+                   required min="0" step="0.01"
+                   value="<%= kerjasama ? kerjasama.margin_rate : '' %>">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="awal_berlaku" class="form-label">Awal Berlaku</label>
+            <input type="date" class="form-control" id="awal_berlaku" name="awal_berlaku"
+                   value="<%= kerjasama && kerjasama.awal_berlaku ? formatDateInput(kerjasama.awal_berlaku) : '' %>">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="akhir_berlaku" class="form-label">Akhir Berlaku</label>
+            <input type="date" class="form-control" id="akhir_berlaku" name="akhir_berlaku"
+                   value="<%= kerjasama && kerjasama.akhir_berlaku ? formatDateInput(kerjasama.akhir_berlaku) : '' %>">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="mb-3">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> Simpan
+            </button>
+            <a href="/kerjasama-developer" class="btn btn-secondary">
+              <i class="fas fa-times"></i> Batal
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const legalitasSelect = document.getElementById('legalitas_tanah');
+  const kondisiSelect = document.getElementById('kondisi_bangunan');
+  const tipeDisplay = document.getElementById('tipe_developer_display');
+  const tipeText = document.getElementById('tipe_display');
+
+  function updateTipe() {
+    const tipe = hitungTipeDeveloper(legalitasSelect.value, kondisiSelect.value);
+    if (tipe) {
+      tipeDisplay.style.display = 'block';
+      tipeText.textContent = tipe;
+    } else {
+      tipeDisplay.style.display = 'none';
+    }
+  }
+
+  legalitasSelect.addEventListener('change', updateTipe);
+  kondisiSelect.addEventListener('change', updateTipe);
+  updateTipe();
+});
+</script>
+
+<%- include('../partials/footer') %>
