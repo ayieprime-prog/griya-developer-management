@@ -110,6 +110,29 @@ function initializeDatabase(database) {
     )
   `);
 
+  // Create audit_log table
+  database.exec(`
+    CREATE TABLE audit_log (
+      id TEXT PRIMARY KEY,
+      user_id TEXT,
+      aksi TEXT NOT NULL,
+      detail TEXT,
+      pengajuan_id TEXT,
+      kerjasama_id TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    )
+  `);
+
+  // Create sessions table
+  database.exec(`
+    CREATE TABLE sessions (
+      sid TEXT PRIMARY KEY,
+      sess TEXT NOT NULL,
+      expire INTEGER NOT NULL
+    )
+  `);
+
   // Seed demo users
   const insertUser = database.prepare(`
     INSERT INTO users (id, username, password, role, nama_lengkap, email, is_active)
