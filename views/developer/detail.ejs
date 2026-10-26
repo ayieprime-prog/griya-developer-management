@@ -3,7 +3,7 @@
 <div class="row mb-4">
   <div class="col-md-8">
     <h1><%= developer.nama %></h1>
-    <p class="text-muted">Detail informasi developer</p>
+    <p class="text-muted">Detail informasi developer - Status: <span class="badge bg-<%= developer.status === 'Aktif' ? 'success' : 'warning' %>"><%= developer.status %></span></p>
   </div>
   <div class="col-md-4 text-end">
     <a href="/developer/<%= developer.id %>/edit" class="btn btn-warning">
@@ -15,13 +15,41 @@
   </div>
 </div>
 
-<div class="row">
-  <div class="col-md-8">
-    <div class="card mb-3">
-      <div class="card-header">
-        <h5 class="mb-0">Informasi Umum</h5>
-      </div>
-      <div class="card-body">
+<div class="card">
+  <div class="card-header">
+    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">
+          <i class="fas fa-info-circle"></i> Info Umum
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="legalitas-tab" data-bs-toggle="tab" data-bs-target="#legalitas" type="button" role="tab">
+          <i class="fas fa-file-contract"></i> Legalitas & Notaris
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pengurus-tab" data-bs-toggle="tab" data-bs-target="#pengurus" type="button" role="tab">
+          <i class="fas fa-users"></i> Pengurus/Direksi
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="proyek-tab" data-bs-toggle="tab" data-bs-target="#proyek" type="button" role="tab">
+          <i class="fas fa-building"></i> Proyek
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="unit-tab" data-bs-toggle="tab" data-bs-target="#unit" type="button" role="tab">
+          <i class="fas fa-home"></i> Unit Properti
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card-body">
+    <div class="tab-content">
+      <!-- Tab: Info Umum -->
+      <div class="tab-pane fade show active" id="info" role="tabpanel">
         <div class="row mb-3">
           <div class="col-md-6">
             <strong>Nama Developer:</strong><br>
@@ -46,13 +74,25 @@
 
         <div class="row mb-3">
           <div class="col-md-6">
+            <strong>Website:</strong><br>
+            <% if (developer.situs_web) { %>
+              <a href="<%= developer.situs_web %>" target="_blank"><%= developer.situs_web %></a>
+            <% } else { %>
+              -
+            <% } %>
+          </div>
+          <div class="col-md-6">
             <strong>Kota:</strong><br>
             <%= developer.kota || '-' %>
           </div>
+        </div>
+
+        <div class="row mb-3">
           <div class="col-md-6">
             <strong>Provinsi:</strong><br>
             <%= developer.provinsi || '-' %>
           </div>
+          <div class="col-md-6"></div>
         </div>
 
         <div class="row mb-3">
@@ -62,20 +102,16 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="card-header">
-        <h5 class="mb-0">Dokumen Legalitas</h5>
-      </div>
-      <div class="card-body">
+      <!-- Tab: Legalitas & Notaris -->
+      <div class="tab-pane fade" id="legalitas" role="tabpanel">
         <div class="row mb-3">
           <div class="col-md-6">
             <strong>Nomor Akta Pendirian:</strong><br>
             <%= developer.nomor_akta_pendirian || '-' %>
           </div>
           <div class="col-md-6">
-            <strong>Tanggal Akta:</strong><br>
+            <strong>Tanggal Akta Pendirian:</strong><br>
             <%= developer.tanggal_akta_pendirian ? formatDate(developer.tanggal_akta_pendirian) : '-' %>
           </div>
         </div>
@@ -102,48 +138,581 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <div class="col-md-4">
-    <div class="card">
-      <div class="card-header">
-        <h5 class="mb-0">Status & History</h5>
-      </div>
-      <div class="card-body">
+      <!-- Tab: Pengurus/Direksi -->
+      <div class="tab-pane fade" id="pengurus" role="tabpanel">
         <div class="mb-3">
-          <strong>Status:</strong><br>
-          <span class="badge bg-<%= developer.status === 'Aktif' ? 'success' : 'warning' %>">
-            <%= developer.status %>
-          </span>
+          <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalPengurus">
+            <i class="fas fa-plus"></i> Tambah Pengurus
+          </button>
         </div>
 
+        <% if (typeof pengurus !== 'undefined' && pengurus.length > 0) { %>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Nama</th>
+                  <th>Jabatan</th>
+                  <th>NIK</th>
+                  <th>No. HP</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% pengurus.forEach(p => { %>
+                  <tr>
+                    <td><strong><%= p.nama %></strong></td>
+                    <td><%= p.jabatan %></td>
+                    <td><%= p.nik || '-' %></td>
+                    <td><%= p.no_hp || '-' %></td>
+                    <td>
+                      <button type="button" class="btn btn-xs btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditPengurus<%= p.id %>" title="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <form action="/developer/<%= developer.id %>/pengurus/<%= p.id %>/delete" method="POST" style="display:inline;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="btn btn-xs btn-danger" title="Hapus" onclick="return confirm('Yakin ingin menghapus pengurus ini?')">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } else { %>
+          <div class="alert alert-info">Tidak ada pengurus terdaftar</div>
+        <% } %>
+      </div>
+
+      <!-- Tab: Proyek -->
+      <div class="tab-pane fade" id="proyek" role="tabpanel">
         <div class="mb-3">
-          <strong>Dibuat Oleh:</strong><br>
-          <small class="text-muted"><%= formatDate(developer.created_at) %></small>
+          <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalProyek">
+            <i class="fas fa-plus"></i> Tambah Proyek
+          </button>
         </div>
 
-        <div class="mb-3">
-          <strong>Diperbarui Oleh:</strong><br>
-          <small class="text-muted"><%= formatDate(developer.updated_at) %></small>
-        </div>
+        <% if (typeof proyek !== 'undefined' && proyek.length > 0) { %>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Nama Proyek</th>
+                  <th>Perumahan</th>
+                  <th>Lokasi</th>
+                  <th>Key Person</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% proyek.forEach(pr => { %>
+                  <tr>
+                    <td><strong><%= pr.nama_proyek %></strong></td>
+                    <td><%= pr.nama_perumahan || '-' %></td>
+                    <td><%= pr.lokasi_proyek || '-' %></td>
+                    <td><%= pr.key_person_nama || '-' %></td>
+                    <td>
+                      <button type="button" class="btn btn-xs btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditProyek<%= pr.id %>" title="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <form action="/developer/<%= developer.id %>/proyek/<%= pr.id %>/delete" method="POST" style="display:inline;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="btn btn-xs btn-danger" title="Hapus" onclick="return confirm('Yakin ingin menghapus proyek dan unitnya?')">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } else { %>
+          <div class="alert alert-info">Tidak ada proyek terdaftar</div>
+        <% } %>
       </div>
-    </div>
 
-    <div class="card mt-3">
-      <div class="card-header">
-        <h5 class="mb-0">Aksi</h5>
-      </div>
-      <div class="card-body">
-        <a href="/developer/<%= developer.id %>/proyek" class="btn btn-sm btn-primary w-100 mb-2">
-          <i class="fas fa-building"></i> Kelola Proyek
-        </a>
-        <a href="/developer/<%= developer.id %>/pengurus" class="btn btn-sm btn-info w-100">
-          <i class="fas fa-users"></i> Kelola Pengurus
-        </a>
+      <!-- Tab: Unit Properti -->
+      <div class="tab-pane fade" id="unit" role="tabpanel">
+        <% if (typeof proyek !== 'undefined' && proyek.length > 0) { %>
+          <div class="mb-3">
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalUnit">
+              <i class="fas fa-plus"></i> Tambah Unit
+            </button>
+          </div>
+
+          <% if (typeof units !== 'undefined' && units.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-sm table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Proyek</th>
+                    <th>No. Kavling</th>
+                    <th>Luas Kavling</th>
+                    <th>Legalitas Tanah</th>
+                    <th>Kondisi Bangunan</th>
+                    <th>Tipe</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% units.forEach(u => { %>
+                    <tr>
+                      <td><strong><%= u.nama_proyek || '-' %></strong></td>
+                      <td><%= u.no_kavling %></td>
+                      <td><%= u.luas_kavling ? (u.luas_kavling + ' m²') : '-' %></td>
+                      <td><%= u.legalitas_tanah || '-' %></td>
+                      <td><%= u.kondisi_bangunan || '-' %></td>
+                      <td>
+                        <% if (u.legalitas_tanah && u.kondisi_bangunan) { %>
+                          <span class="badge bg-info"><%= hitungTipeDeveloper(u.legalitas_tanah, u.kondisi_bangunan) %></span>
+                        <% } else { %>
+                          -
+                        <% } %>
+                      </td>
+                      <td>
+                        <button type="button" class="btn btn-xs btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditUnit<%= u.id %>" title="Edit">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <form action="/developer/<%= developer.id %>/unit/<%= u.id %>/delete" method="POST" style="display:inline;">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <button type="submit" class="btn btn-xs btn-danger" title="Hapus" onclick="return confirm('Yakin ingin menghapus unit ini?')">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="alert alert-info">Tidak ada unit terdaftar</div>
+          <% } %>
+        <% } else { %>
+          <div class="alert alert-warning">Tambahkan proyek terlebih dahulu sebelum menambah unit</div>
+        <% } %>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Modal: Tambah Pengurus -->
+<div class="modal fade" id="modalPengurus" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tambah Pengurus/Direksi</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/developer/<%= developer.id %>/pengurus" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="nama" class="form-label">Nama <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="nama" required>
+          </div>
+          <div class="mb-3">
+            <label for="jabatan" class="form-label">Jabatan <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="jabatan" required>
+          </div>
+          <div class="mb-3">
+            <label for="nik" class="form-label">NIK</label>
+            <input type="text" class="form-control" name="nik">
+          </div>
+          <div class="mb-3">
+            <label for="alamat" class="form-label">Alamat</label>
+            <textarea class="form-control" name="alamat" rows="2"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="no_hp" class="form-label">No. HP</label>
+            <input type="text" class="form-control" name="no_hp">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tambah Proyek -->
+<div class="modal fade" id="modalProyek" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tambah Proyek</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/developer/<%= developer.id %>/proyek" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="nama_proyek" class="form-label">Nama Proyek <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="nama_proyek" required>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="nama_perumahan" class="form-label">Nama Perumahan</label>
+                <input type="text" class="form-control" name="nama_perumahan">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="lokasi_proyek" class="form-label">Lokasi Proyek</label>
+                <input type="text" class="form-control" name="lokasi_proyek">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="kota" class="form-label">Kota</label>
+                <input type="text" class="form-control" name="kota">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="provinsi" class="form-label">Provinsi</label>
+                <input type="text" class="form-control" name="provinsi">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="key_person_jabatan" class="form-label">Key Person - Jabatan</label>
+                <input type="text" class="form-control" name="key_person_jabatan">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="key_person_nama" class="form-label">Key Person - Nama</label>
+                <input type="text" class="form-control" name="key_person_nama">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="key_person_no_hp" class="form-label">Key Person - No. HP</label>
+                <input type="text" class="form-control" name="key_person_no_hp">
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="bukti_kepemilikan" class="form-label">Bukti Kepemilikan</label>
+            <input type="text" class="form-control" name="bukti_kepemilikan">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tambah Unit -->
+<div class="modal fade" id="modalUnit" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tambah Unit Properti</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/developer/<%= developer.id %>/unit" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="developer_proyek_id" class="form-label">Proyek <span class="text-danger">*</span></label>
+            <select class="form-select" name="developer_proyek_id" required>
+              <option value="">-- Pilih Proyek --</option>
+              <% proyek.forEach(p => { %>
+                <option value="<%= p.id %>"><%= p.nama_proyek %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="no_kavling" class="form-label">No. Kavling <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="no_kavling" required>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="luas_kavling" class="form-label">Luas Kavling (m²)</label>
+                <input type="number" step="0.01" class="form-control" name="luas_kavling">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="luas_bangunan" class="form-label">Luas Bangunan (m²)</label>
+                <input type="number" step="0.01" class="form-control" name="luas_bangunan">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="legalitas_tanah" class="form-label">Legalitas Tanah</label>
+                <select class="form-select" name="legalitas_tanah">
+                  <option value="">-- Pilih --</option>
+                  <option value="Sertifikat Induk">Sertifikat Induk</option>
+                  <option value="Sertifikat Pecahan">Sertifikat Pecahan</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="kondisi_bangunan" class="form-label">Kondisi Bangunan</label>
+                <select class="form-select" name="kondisi_bangunan">
+                  <option value="">-- Pilih --</option>
+                  <option value="Belum Selesai">Belum Selesai</option>
+                  <option value="Selesai">Selesai</option>
+                  <option value="Sebagian Selesai">Sebagian Selesai</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="harga_satuan" class="form-label">Harga Satuan</label>
+                <input type="number" step="0.01" class="form-control" name="harga_satuan">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="status_terjual" class="form-label">Status Terjual</label>
+                <select class="form-select" name="status_terjual">
+                  <option value="0">Belum Terjual</option>
+                  <option value="1">Terjual</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modals (generated dynamically) -->
+<% if (typeof pengurus !== 'undefined') { %>
+  <% pengurus.forEach(p => { %>
+    <div class="modal fade" id="modalEditPengurus<%= p.id %>" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Pengurus</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form action="/developer/<%= developer.id %>/pengurus/<%= p.id %>/edit" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="nama" class="form-label">Nama <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="nama" value="<%= p.nama %>" required>
+              </div>
+              <div class="mb-3">
+                <label for="jabatan" class="form-label">Jabatan <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="jabatan" value="<%= p.jabatan %>" required>
+              </div>
+              <div class="mb-3">
+                <label for="nik" class="form-label">NIK</label>
+                <input type="text" class="form-control" name="nik" value="<%= p.nik || '' %>">
+              </div>
+              <div class="mb-3">
+                <label for="alamat" class="form-label">Alamat</label>
+                <textarea class="form-control" name="alamat" rows="2"><%= p.alamat || '' %></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="no_hp" class="form-label">No. HP</label>
+                <input type="text" class="form-control" name="no_hp" value="<%= p.no_hp || '' %>">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  <% }); %>
+<% } %>
+
+<!-- Edit Proyek Modals -->
+<% if (typeof proyek !== 'undefined') { %>
+  <% proyek.forEach(pr => { %>
+    <div class="modal fade" id="modalEditProyek<%= pr.id %>" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Proyek</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form action="/developer/<%= developer.id %>/proyek/<%= pr.id %>/edit" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="nama_proyek" class="form-label">Nama Proyek <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="nama_proyek" value="<%= pr.nama_proyek %>" required>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="nama_perumahan" class="form-label">Nama Perumahan</label>
+                    <input type="text" class="form-control" name="nama_perumahan" value="<%= pr.nama_perumahan || '' %>">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="lokasi_proyek" class="form-label">Lokasi Proyek</label>
+                    <input type="text" class="form-control" name="lokasi_proyek" value="<%= pr.lokasi_proyek || '' %>">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="kota" class="form-label">Kota</label>
+                    <input type="text" class="form-control" name="kota" value="<%= pr.kota || '' %>">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="provinsi" class="form-label">Provinsi</label>
+                    <input type="text" class="form-control" name="provinsi" value="<%= pr.provinsi || '' %>">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="key_person_jabatan" class="form-label">Key Person - Jabatan</label>
+                    <input type="text" class="form-control" name="key_person_jabatan" value="<%= pr.key_person_jabatan || '' %>">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="key_person_nama" class="form-label">Key Person - Nama</label>
+                    <input type="text" class="form-control" name="key_person_nama" value="<%= pr.key_person_nama || '' %>">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="key_person_no_hp" class="form-label">Key Person - No. HP</label>
+                    <input type="text" class="form-control" name="key_person_no_hp" value="<%= pr.key_person_no_hp || '' %>">
+                  </div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="bukti_kepemilikan" class="form-label">Bukti Kepemilikan</label>
+                <input type="text" class="form-control" name="bukti_kepemilikan" value="<%= pr.bukti_kepemilikan || '' %>">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  <% }); %>
+<% } %>
+
+<!-- Edit Unit Modals -->
+<% if (typeof units !== 'undefined') { %>
+  <% units.forEach(u => { %>
+    <div class="modal fade" id="modalEditUnit<%= u.id %>" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Unit Properti</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form action="/developer/<%= developer.id %>/unit/<%= u.id %>/edit" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="no_kavling" class="form-label">No. Kavling <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="no_kavling" value="<%= u.no_kavling %>" required>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="luas_kavling" class="form-label">Luas Kavling (m²)</label>
+                    <input type="number" step="0.01" class="form-control" name="luas_kavling" value="<%= u.luas_kavling || '' %>">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="luas_bangunan" class="form-label">Luas Bangunan (m²)</label>
+                    <input type="number" step="0.01" class="form-control" name="luas_bangunan" value="<%= u.luas_bangunan || '' %>">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="legalitas_tanah" class="form-label">Legalitas Tanah</label>
+                    <select class="form-select" name="legalitas_tanah">
+                      <option value="">-- Pilih --</option>
+                      <option value="Sertifikat Induk" <%= u.legalitas_tanah === 'Sertifikat Induk' ? 'selected' : '' %>>Sertifikat Induk</option>
+                      <option value="Sertifikat Pecahan" <%= u.legalitas_tanah === 'Sertifikat Pecahan' ? 'selected' : '' %>>Sertifikat Pecahan</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="kondisi_bangunan" class="form-label">Kondisi Bangunan</label>
+                    <select class="form-select" name="kondisi_bangunan">
+                      <option value="">-- Pilih --</option>
+                      <option value="Belum Selesai" <%= u.kondisi_bangunan === 'Belum Selesai' ? 'selected' : '' %>>Belum Selesai</option>
+                      <option value="Selesai" <%= u.kondisi_bangunan === 'Selesai' ? 'selected' : '' %>>Selesai</option>
+                      <option value="Sebagian Selesai" <%= u.kondisi_bangunan === 'Sebagian Selesai' ? 'selected' : '' %>>Sebagian Selesai</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="harga_satuan" class="form-label">Harga Satuan</label>
+                    <input type="number" step="0.01" class="form-control" name="harga_satuan" value="<%= u.harga_satuan || '' %>">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="status_terjual" class="form-label">Status Terjual</label>
+                    <select class="form-select" name="status_terjual">
+                      <option value="0" <%= u.status_terjual === 0 ? 'selected' : '' %>>Belum Terjual</option>
+                      <option value="1" <%= u.status_terjual === 1 ? 'selected' : '' %>>Terjual</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  <% }); %>
+<% } %>
 
 <%- include('../partials/footer') %>

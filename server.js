@@ -26,6 +26,9 @@ const {
 const {
   loginValidators,
   developerValidators,
+  developerPegurusValidators,
+  developerProyekValidatorsEnhanced,
+  developerUnitValidators,
   kerjasamaDeveloperValidators,
   verifikasiValidators,
   keputusanValidators,
@@ -305,6 +308,64 @@ app.get('/developer/new', requireLogin, requireRole('admin', 'account_officer'),
   res.render('developer/form', { developer: null, action: 'Tambah' });
 });
 
+// POST /developer - Create new developer
+app.post('/developer', requireLogin, requireRole('admin', 'account_officer'), developerValidators, (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const errorArray = errors.array().map(e => e.msg);
+    return res.render('developer/form', {
+      developer: req.body,
+      action: 'Tambah',
+      errors: errorArray
+    });
+  }
+
+  try {
+    if (!csrfValid(req)) {
+      req.session.error = 'CSRF token tidak valid.';
+      return res.redirect('/developer');
+    }
+
+    const developerId = generateId();
+    const stmt = db.prepare(`
+      INSERT INTO developer (
+        id, nama, legalitas, nomor_akta_pendirian, tanggal_akta_pendirian,
+        notaris_nama, notaris_nib, sk_menkumham_nomor, sk_menkumham_tanggal,
+        situs_web, email, no_telepon, alamat_kantor, kota, provinsi,
+        status, created_by, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `);
+
+    stmt.run(
+      developerId,
+      req.body.nama,
+      req.body.legalitas || null,
+      req.body.nomor_akta_pendirian || null,
+      req.body.tanggal_akta_pendirian || null,
+      req.body.notaris_nama || null,
+      req.body.notaris_nib || null,
+      req.body.sk_menkumham_nomor || null,
+      req.body.sk_menkumham_tanggal || null,
+      req.body.situs_web || null,
+      req.body.email || null,
+      req.body.no_telepon || null,
+      req.body.alamat_kantor || null,
+      req.body.kota || null,
+      req.body.provinsi || null,
+      'Aktif',
+      req.session.user.id
+    );
+
+    catatAuditSistem(req.session.user.id, 'CREATE_DEVELOPER', `Developer ${req.body.nama} dibuat`);
+    req.session.success = 'Developer berhasil ditambahkan.';
+    res.redirect(`/developer/${developerId}`);
+  } catch (err) {
+    console.error('Developer create error:', err);
+    req.session.error = 'Terjadi kesalahan saat membuat developer.';
+    res.redirect('/developer');
+  }
+});
+
 // GET /developer/:id - View developer detail
 app.get('/developer/:id', requireLogin, (req, res) => {
   try {
@@ -316,11 +377,476 @@ app.get('/developer/:id', requireLogin, (req, res) => {
       return res.redirect('/developer');
     }
 
-    res.render('developer/detail', { developer });
+    // Get pengurus
+    const pegurusStmt = db.prepare('SELECT * FROM developer_pengurus WHERE developer_id = ? ORDER BY created_at DESC');
+    const pengurus = pegurusStmt.all(req.params.id);
+
+    // Get proyek
+    const proyekStmt = db.prepare('SELECT * FROM developer_proyek WHERE developer_id = ? ORDER BY created_at DESC');
+    const proyek = proyekStmt.all(req.params.id);
+
+    // Get unit (with tipe calculation)
+    const unitStmt = db.prepare(`
+      SELECT du.*, dp.nama_proyek
+      FROM developer_unit du
+      LEFT JOIN developer_proyek dp ON du.developer_proyek_id = dp.id
+      WHERE dp.developer_id = ?
+      ORDER BY du.created_at DESC
+    `);
+    const units = unitStmt.all(req.params.id);
+
+    res.render('developer/detail', {
+      developer,
+      pengurus,
+      proyek,
+      units,
+      hitungTipeDeveloper
+    });
   } catch (err) {
     console.error('Developer detail error:', err);
     req.session.error = 'Terjadi kesalahan.';
     res.redirect('/developer');
+  }
+});
+
+// GET /developer/:id/edit - Edit developer form
+app.get('/developer/:id/edit', requireLogin, requireRole('admin', 'account_officer'), (req, res) => {
+  try {
+    const stmt = db.prepare('SELECT * FROM developer WHERE id = ?');
+    const developer = stmt.get(req.params.id);
+
+    if (!developer) {
+      req.session.error = 'Developer tidak ditemukan.';
+      return res.redirect('/developer');
+    }
+
+    res.render('developer/form', { developer, action: 'Edit' });
+  } catch (err) {
+    console.error('Developer edit form error:', err);
+    req.session.error = 'Terjadi kesalahan.';
+    res.redirect('/developer');
+  }
+});
+
+// POST /developer/:id - Update developer
+app.post('/developer/:id', requireLogin, requireRole('admin', 'account_officer'), developerValidators, (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const errorArray = errors.array().map(e => e.msg);
+    return res.render('developer/form', {
+      developer: { ...req.body, id: req.params.id },
+      action: 'Edit',
+      errors: errorArray
+    });
+  }
+
+  try {
+    if (!csrfValid(req)) {
+      req.session.error = 'CSRF token tidak valid.';
+      return res.redirect(`/developer/${req.params.id}`);
+    }
+
+    const stmt = db.prepare(`
+      UPDATE developer SET
+        nama = ?, legalitas = ?, nomor_akta_pendirian = ?, tanggal_akta_pendirian = ?,
+        notaris_nama = ?, notaris_nib = ?, sk_menkumham_nomor = ?, sk_menkumham_tanggal = ?,
+        situs_web = ?, email = ?, no_telepon = ?, alamat_kantor = ?, kota = ?, provinsi = ?,
+        updated_by = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+
+    stmt.run(
+      req.body.nama,
+      req.body.legalitas || null,
+      req.body.nomor_akta_pendirian || null,
+      req.body.tanggal_akta_pendirian || null,
+      req.body.notaris_nama || null,
+      req.body.notaris_nib || null,
+      req.body.sk_menkumham_nomor || null,
+      req.body.sk_menkumham_tanggal || null,
+      req.body.situs_web || null,
+      req.body.email || null,
+      req.body.no_telepon || null,
+      req.body.alamat_kantor || null,
+      req.body.kota || null,
+      req.body.provinsi || null,
+      req.session.user.id,
+      req.params.id
+    );
+
+    catatAuditSistem(req.session.user.id, 'UPDATE_DEVELOPER', `Developer ${req.body.nama} diperbarui`);
+    req.session.success = 'Developer berhasil diperbarui.';
+    res.redirect(`/developer/${req.params.id}`);
+  } catch (err) {
+    console.error('Developer update error:', err);
+    req.session.error = 'Terjadi kesalahan saat mengupdate developer.';
+    res.redirect(`/developer/${req.params.id}`);
+  }
+});
+
+// POST /developer/:id/delete - Soft delete developer
+app.post('/developer/:id/delete', requireLogin, requireRole('admin'), (req, res) => {
+  try {
+    if (!csrfValid(req)) {
+      req.session.error = 'CSRF token tidak valid.';
+      return res.redirect('/developer');
+    }
+
+    const stmt = db.prepare('UPDATE developer SET status = ? WHERE id = ?');
+    stmt.run('Nonaktif', req.params.id);
+
+    catatAuditSistem(req.session.user.id, 'DELETE_DEVELOPER', `Developer dengan ID ${req.params.id} dihapus`);
+    req.session.success = 'Developer berhasil dihapus.';
+    res.redirect('/developer');
+  } catch (err) {
+    console.error('Developer delete error:', err);
+    req.session.error = 'Terjadi kesalahan saat menghapus developer.';
+    res.redirect('/developer');
+  }
+});
+
+// ============================================
+// Developer Pengurus Sub-routes
+// ============================================
+
+// POST /developer/:id/pengurus - Add pengurus
+app.post('/developer/:id/pengurus', requireLogin, requireRole('admin', 'account_officer'), developerPegurusValidators, (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.session.error = errors.array()[0].msg;
+    return res.redirect(`/developer/${req.params.id}`);
+  }
+
+  try {
+    if (!csrfValid(req)) {
+      req.session.error = 'CSRF token tidak valid.';
+      return res.redirect(`/developer/${req.params.id}`);
+    }
+
+    const pegurusId = generateId();
+    const stmt = db.prepare(`
+      INSERT INTO developer_pengurus (id, developer_id, nama, jabatan, nik, alamat, no_hp, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `);
+
+    stmt.run(
+      pegurusId,
+      req.params.id,
+      req.body.nama,
+      req.body.jabatan,
+      req.body.nik || null,
+      req.body.alamat || null,
+      req.body.no_hp || null
+    );
+
+    catatAuditSistem(req.session.user.id, 'CREATE_PENGURUS', `Pengurus ${req.body.nama} ditambahkan`);
+    req.session.success = 'Pengurus berhasil ditambahkan.';
+    res.redirect(`/developer/${req.params.id}`);
+  } catch (err) {
+    console.error('Add pengurus error:', err);
+    req.session.error = 'Terjadi kesalahan saat menambah pengurus.';
+    res.redirect(`/developer/${req.params.id}`);
+  }
+});
+
+// POST /developer/:id/pengurus/:pegurusId/edit - Edit pengurus
+app.post('/developer/:id/pengurus/:pegurusId/edit', requireLogin, requireRole('admin', 'account_officer'), developerPegurusValidators, (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.session.error = errors.array()[0].msg;
+    return res.redirect(`/developer/${req.params.id}`);
+  }
+
+  try {
+    if (!csrfValid(req)) {
+      req.session.error = 'CSRF token tidak valid.';
+      return res.redirect(`/developer/${req.params.id}`);
+    }
+
+    const stmt = db.prepare(`
+      UPDATE developer_pengurus SET nama = ?, jabatan = ?, nik = ?, alamat = ?, no_hp = ?
+      WHERE id = ? AND developer_id = ?
+    `);
+
+    stmt.run(
+      req.body.nama,
+      req.body.jabatan,
+      req.body.nik || null,
+      req.body.alamat || null,
+      req.body.no_hp || null,
+      req.params.pegurusId,
+      req.params.id
+    );
+
+    catatAuditSistem(req.session.user.id, 'UPDATE_PENGURUS', `Pengurus ${req.body.nama} diperbarui`);
+    req.session.success = 'Pengurus berhasil diperbarui.';
+    res.redirect(`/developer/${req.params.id}`);
+  } catch (err) {
+    console.error('Edit pengurus error:', err);
+    req.session.error = 'Terjadi kesalahan saat mengupdate pengurus.';
+    res.redirect(`/developer/${req.params.id}`);
+  }
+});
+
+// POST /developer/:id/pengurus/:pegurusId/delete - Delete pengurus
+app.post('/developer/:id/pengurus/:pegurusId/delete', requireLogin, requireRole('admin'), (req, res) => {
+  try {
+    if (!csrfValid(req)) {
+      req.session.error = 'CSRF token tidak valid.';
+      return res.redirect(`/developer/${req.params.id}`);
+    }
+
+    const stmt = db.prepare('DELETE FROM developer_pengurus WHERE id = ? AND developer_id = ?');
+    stmt.run(req.params.pegurusId, req.params.id);
+
+    catatAuditSistem(req.session.user.id, 'DELETE_PENGURUS', `Pengurus dengan ID ${req.params.pegurusId} dihapus`);
+    req.session.success = 'Pengurus berhasil dihapus.';
+    res.redirect(`/developer/${req.params.id}`);
+  } catch (err) {
+    console.error('Delete pengurus error:', err);
+    req.session.error = 'Terjadi kesalahan saat menghapus pengurus.';
+    res.redirect(`/developer/${req.params.id}`);
+  }
+});
+
+// ============================================
+// Developer Proyek Sub-routes
+// ============================================
+
+// POST /developer/:id/proyek - Add proyek
+app.post('/developer/:id/proyek', requireLogin, requireRole('admin', 'account_officer'), developerProyekValidatorsEnhanced, (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.session.error = errors.array()[0].msg;
+    return res.redirect(`/developer/${req.params.id}`);
+  }
+
+  try {
+    if (!csrfValid(req)) {
+      req.session.error = 'CSRF token tidak valid.';
+      return res.redirect(`/developer/${req.params.id}`);
+    }
+
+    const proyekId = generateId();
+    const stmt = db.prepare(`
+      INSERT INTO developer_proyek (
+        id, developer_id, nama_proyek, nama_perumahan, key_person_nama, key_person_jabatan,
+        key_person_no_hp, bukti_kepemilikan, lokasi_proyek, kota, provinsi, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `);
+
+    stmt.run(
+      proyekId,
+      req.params.id,
+      req.body.nama_proyek,
+      req.body.nama_perumahan || null,
+      req.body.key_person_nama || null,
+      req.body.key_person_jabatan || null,
+      req.body.key_person_no_hp || null,
+      req.body.bukti_kepemilikan || null,
+      req.body.lokasi_proyek || null,
+      req.body.kota || null,
+      req.body.provinsi || null
+    );
+
+    catatAuditSistem(req.session.user.id, 'CREATE_PROYEK', `Proyek ${req.body.nama_proyek} ditambahkan`);
+    req.session.success = 'Proyek berhasil ditambahkan.';
+    res.redirect(`/developer/${req.params.id}`);
+  } catch (err) {
+    console.error('Add proyek error:', err);
+    req.session.error = 'Terjadi kesalahan saat menambah proyek.';
+    res.redirect(`/developer/${req.params.id}`);
+  }
+});
+
+// POST /developer/:id/proyek/:proyekId/edit - Edit proyek
+app.post('/developer/:id/proyek/:proyekId/edit', requireLogin, requireRole('admin', 'account_officer'), developerProyekValidatorsEnhanced, (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.session.error = errors.array()[0].msg;
+    return res.redirect(`/developer/${req.params.id}`);
+  }
+
+  try {
+    if (!csrfValid(req)) {
+      req.session.error = 'CSRF token tidak valid.';
+      return res.redirect(`/developer/${req.params.id}`);
+    }
+
+    const stmt = db.prepare(`
+      UPDATE developer_proyek SET
+        nama_proyek = ?, nama_perumahan = ?, key_person_nama = ?, key_person_jabatan = ?,
+        key_person_no_hp = ?, bukti_kepemilikan = ?, lokasi_proyek = ?, kota = ?, provinsi = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ? AND developer_id = ?
+    `);
+
+    stmt.run(
+      req.body.nama_proyek,
+      req.body.nama_perumahan || null,
+      req.body.key_person_nama || null,
+      req.body.key_person_jabatan || null,
+      req.body.key_person_no_hp || null,
+      req.body.bukti_kepemilikan || null,
+      req.body.lokasi_proyek || null,
+      req.body.kota || null,
+      req.body.provinsi || null,
+      req.params.proyekId,
+      req.params.id
+    );
+
+    catatAuditSistem(req.session.user.id, 'UPDATE_PROYEK', `Proyek ${req.body.nama_proyek} diperbarui`);
+    req.session.success = 'Proyek berhasil diperbarui.';
+    res.redirect(`/developer/${req.params.id}`);
+  } catch (err) {
+    console.error('Edit proyek error:', err);
+    req.session.error = 'Terjadi kesalahan saat mengupdate proyek.';
+    res.redirect(`/developer/${req.params.id}`);
+  }
+});
+
+// POST /developer/:id/proyek/:proyekId/delete - Delete proyek
+app.post('/developer/:id/proyek/:proyekId/delete', requireLogin, requireRole('admin'), (req, res) => {
+  try {
+    if (!csrfValid(req)) {
+      req.session.error = 'CSRF token tidak valid.';
+      return res.redirect(`/developer/${req.params.id}`);
+    }
+
+    // Delete associated units first
+    const deleteUnitsStmt = db.prepare('DELETE FROM developer_unit WHERE developer_proyek_id = ?');
+    deleteUnitsStmt.run(req.params.proyekId);
+
+    // Delete proyek
+    const stmt = db.prepare('DELETE FROM developer_proyek WHERE id = ? AND developer_id = ?');
+    stmt.run(req.params.proyekId, req.params.id);
+
+    catatAuditSistem(req.session.user.id, 'DELETE_PROYEK', `Proyek dengan ID ${req.params.proyekId} dihapus`);
+    req.session.success = 'Proyek berhasil dihapus.';
+    res.redirect(`/developer/${req.params.id}`);
+  } catch (err) {
+    console.error('Delete proyek error:', err);
+    req.session.error = 'Terjadi kesalahan saat menghapus proyek.';
+    res.redirect(`/developer/${req.params.id}`);
+  }
+});
+
+// ============================================
+// Developer Unit Sub-routes
+// ============================================
+
+// POST /developer/:id/unit - Add unit
+app.post('/developer/:id/unit', requireLogin, requireRole('admin', 'account_officer'), developerUnitValidators, (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.session.error = errors.array()[0].msg;
+    return res.redirect(`/developer/${req.params.id}`);
+  }
+
+  try {
+    if (!csrfValid(req)) {
+      req.session.error = 'CSRF token tidak valid.';
+      return res.redirect(`/developer/${req.params.id}`);
+    }
+
+    // Verify proyek exists
+    const proyekStmt = db.prepare('SELECT id FROM developer_proyek WHERE id = ? AND developer_id = ?');
+    const proyek = proyekStmt.get(req.body.developer_proyek_id, req.params.id);
+
+    if (!proyek) {
+      req.session.error = 'Proyek tidak ditemukan.';
+      return res.redirect(`/developer/${req.params.id}`);
+    }
+
+    const unitId = generateId();
+    const stmt = db.prepare(`
+      INSERT INTO developer_unit (
+        id, developer_proyek_id, no_kavling, luas_kavling, luas_bangunan,
+        legalitas_tanah, kondisi_bangunan, status_terjual, harga_satuan, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `);
+
+    stmt.run(
+      unitId,
+      req.body.developer_proyek_id,
+      req.body.no_kavling,
+      req.body.luas_kavling || null,
+      req.body.luas_bangunan || null,
+      req.body.legalitas_tanah || null,
+      req.body.kondisi_bangunan || null,
+      req.body.status_terjual || 0,
+      req.body.harga_satuan || null
+    );
+
+    catatAuditSistem(req.session.user.id, 'CREATE_UNIT', `Unit ${req.body.no_kavling} ditambahkan`);
+    req.session.success = 'Unit properti berhasil ditambahkan.';
+    res.redirect(`/developer/${req.params.id}`);
+  } catch (err) {
+    console.error('Add unit error:', err);
+    req.session.error = 'Terjadi kesalahan saat menambah unit.';
+    res.redirect(`/developer/${req.params.id}`);
+  }
+});
+
+// POST /developer/:id/unit/:unitId/edit - Edit unit
+app.post('/developer/:id/unit/:unitId/edit', requireLogin, requireRole('admin', 'account_officer'), developerUnitValidators, (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.session.error = errors.array()[0].msg;
+    return res.redirect(`/developer/${req.params.id}`);
+  }
+
+  try {
+    if (!csrfValid(req)) {
+      req.session.error = 'CSRF token tidak valid.';
+      return res.redirect(`/developer/${req.params.id}`);
+    }
+
+    const stmt = db.prepare(`
+      UPDATE developer_unit SET
+        no_kavling = ?, luas_kavling = ?, luas_bangunan = ?,
+        legalitas_tanah = ?, kondisi_bangunan = ?, status_terjual = ?, harga_satuan = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+
+    stmt.run(
+      req.body.no_kavling,
+      req.body.luas_kavling || null,
+      req.body.luas_bangunan || null,
+      req.body.legalitas_tanah || null,
+      req.body.kondisi_bangunan || null,
+      req.body.status_terjual || 0,
+      req.body.harga_satuan || null,
+      req.params.unitId
+    );
+
+    catatAuditSistem(req.session.user.id, 'UPDATE_UNIT', `Unit ${req.body.no_kavling} diperbarui`);
+    req.session.success = 'Unit properti berhasil diperbarui.';
+    res.redirect(`/developer/${req.params.id}`);
+  } catch (err) {
+    console.error('Edit unit error:', err);
+    req.session.error = 'Terjadi kesalahan saat mengupdate unit.';
+    res.redirect(`/developer/${req.params.id}`);
+  }
+});
+
+// POST /developer/:id/unit/:unitId/delete - Delete unit
+app.post('/developer/:id/unit/:unitId/delete', requireLogin, requireRole('admin'), (req, res) => {
+  try {
+    if (!csrfValid(req)) {
+      req.session.error = 'CSRF token tidak valid.';
+      return res.redirect(`/developer/${req.params.id}`);
+    }
+
+    const stmt = db.prepare('DELETE FROM developer_unit WHERE id = ?');
+    stmt.run(req.params.unitId);
+
+    catatAuditSistem(req.session.user.id, 'DELETE_UNIT', `Unit dengan ID ${req.params.unitId} dihapus`);
+    req.session.success = 'Unit properti berhasil dihapus.';
+    res.redirect(`/developer/${req.params.id}`);
+  } catch (err) {
+    console.error('Delete unit error:', err);
+    req.session.error = 'Terjadi kesalahan saat menghapus unit.';
+    res.redirect(`/developer/${req.params.id}`);
   }
 });
 

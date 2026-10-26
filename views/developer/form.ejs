@@ -12,6 +12,16 @@
     <h5 class="mb-0"><%= action %> Data Developer</h5>
   </div>
   <div class="card-body">
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+      <div class="alert alert-danger">
+        <strong>Terjadi kesalahan:</strong>
+        <ul class="mb-0">
+          <% errors.forEach(error => { %>
+            <li><%= error %></li>
+          <% }); %>
+        </ul>
+      </div>
+    <% } %>
     <form method="POST" action="<%= developer ? '/developer/' + developer.id : '/developer' %>" class="needs-validation">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
@@ -59,6 +69,17 @@
                    value="<%= developer ? developer.notaris_nama : '' %>">
           </div>
         </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="notaris_nib" class="form-label">NIB Notaris</label>
+            <input type="text" class="form-control" id="notaris_nib" name="notaris_nib"
+                   value="<%= developer ? developer.notaris_nib : '' %>">
+          </div>
+        </div>
+        <div class="col-md-6"></div>
       </div>
 
       <div class="row">
