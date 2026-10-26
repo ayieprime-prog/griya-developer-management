@@ -57,18 +57,79 @@ try {
     const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
     if (userCount.count === 0) {
       console.log('📊 Initializing database with schema & seed data...');
-      const initScript = require('./db/init.js');
-      console.log('✓ Database initialized');
+      initializeDatabase(db);
+      console.log('✓ Database initialized with demo accounts');
     }
   } catch (err) {
     // Tables don't exist yet, initialize
     console.log('📊 Creating database schema & seed data...');
-    const initScript = require('./db/init.js');
-    console.log('✓ Database initialized');
+    initializeDatabase(db);
+    console.log('✓ Database initialized with demo accounts');
   }
 } catch (err) {
   console.error('✗ Database connection failed:', err.message);
   process.exit(1);
+}
+
+// Database initialization function
+function initializeDatabase(database) {
+  const tablesToDrop = [
+    'audit_log', 'developer_realisasi_cabang', 'developer_tbo_item',
+    'kerjasama_developer_addendum', 'kerjasama_developer_komposisi_pencairan',
+    'kerjasama_developer_aplikasi', 'kerjasama_developer', 'developer_pengurus',
+    'developer_unit', 'developer_proyek', 'developer', 'users'
+  ];
+
+  tablesToDrop.forEach(table => {
+    try { database.exec(`DROP TABLE IF EXISTS ${table}`); } catch (e) {}
+  });
+
+  // Create users table
+  database.exec(`
+    CREATE TABLE users (
+      id TEXT PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      role TEXT NOT NULL CHECK(role IN ('admin', 'account_officer', 'supervisor', 'pemimpin_cabang', 'laka', 'pemimpin_uus')),
+      nama_lengkap TEXT NOT NULL,
+      email TEXT,
+      is_active INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Create developer table (basic structure)
+  database.exec(`
+    CREATE TABLE developer (
+      id TEXT PRIMARY KEY,
+      nama TEXT NOT NULL,
+      legalitas TEXT,
+      email TEXT,
+      status TEXT DEFAULT 'Aktif',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Seed demo users
+  const insertUser = database.prepare(`
+    INSERT INTO users (id, username, password, role, nama_lengkap, email, is_active)
+    VALUES (?, ?, ?, ?, ?, ?, 1)
+  `);
+
+  const users = [
+    { id: generateId(), username: 'admin', role: 'admin', nama_lengkap: 'Administrator', email: 'admin@griya.com' },
+    { id: generateId(), username: 'ao1', role: 'account_officer', nama_lengkap: 'Account Officer 1', email: 'ao1@griya.com' },
+    { id: generateId(), username: 'supervisor1', role: 'supervisor', nama_lengkap: 'Supervisor 1', email: 'supervisor1@griya.com' },
+    { id: generateId(), username: 'pemimpincabang1', role: 'pemimpin_cabang', nama_lengkap: 'Pemimpin Cabang 1', email: 'pemimpin1@griya.com' },
+    { id: generateId(), username: 'laka1', role: 'laka', nama_lengkap: 'LAKA 1', email: 'laka1@griya.com' },
+    { id: generateId(), username: 'pemimpinuus1', role: 'pemimpin_uus', nama_lengkap: 'Pemimpin UUS 1', email: 'uus1@griya.com' }
+  ];
+
+  users.forEach(user => {
+    const password = user.username === 'admin' ? 'admin123' : user.username + '123';
+    const hashed = bcrypt.hashSync(password, 10);
+    insertUser.run(user.id, user.username, hashed, user.role, user.nama_lengkap, user.email);
+  });
 }
 
 // Session store class
