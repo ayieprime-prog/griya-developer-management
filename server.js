@@ -51,6 +51,21 @@ try {
   db = new DatabaseSync(dbPath);
   db.exec('PRAGMA journal_mode = WAL');
   console.log('✓ Database connected');
+
+  // Auto-initialize database if empty
+  try {
+    const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
+    if (userCount.count === 0) {
+      console.log('📊 Initializing database with schema & seed data...');
+      const initScript = require('./db/init.js');
+      console.log('✓ Database initialized');
+    }
+  } catch (err) {
+    // Tables don't exist yet, initialize
+    console.log('📊 Creating database schema & seed data...');
+    const initScript = require('./db/init.js');
+    console.log('✓ Database initialized');
+  }
 } catch (err) {
   console.error('✗ Database connection failed:', err.message);
   process.exit(1);
